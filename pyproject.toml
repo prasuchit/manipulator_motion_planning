@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "manipulator_motion_planning"
+version = "0.1.0"
+description = "Motion planning framework for robotic manipulators"
+readme = "README.md"
+requires-python = ">=3.8"
+
+authors = [
+  {name = "Your Name"}
+]
+
+dependencies = [
+  "numpy",
+  "pyzmq",
+  "mujoco",
+]
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,11 +1,13 @@
-
-from enum import Enum, auto
 from dataclasses import dataclass
-from numpy.typing import NDArray
-import yaml
+from enum import Enum, auto
+
 import numpy as np
-from motion_planning.trajectory_generator import CubicTrajectory
-from controller import ControllerCommand
+import yaml
+from numpy.typing import NDArray
+
+from manipulator_motion_planning.controller import ControllerCommand
+from manipulator_motion_planning.motion_planning.trajectory_generator import CubicTrajectory
+
 
 class PickAndPlaceActionType(Enum):
     NONE = auto()
@@ -20,9 +22,11 @@ class PickAndPlaceActionType(Enum):
     MOVE_TO_POST_PLACE = auto()
     MOVE_TO_HOME = auto()
 
+
 class ActionState(Enum):
     RUNNING = auto()
     IDLE = auto()
+
 
 @dataclass
 class PickAndPlaceActionConfig:
@@ -44,7 +48,6 @@ class PickAndPlaceActionConfig:
     move_to_post_place_duration_s: float
     move_to_home_duration_s: float
 
-
     @staticmethod
     def load_from_yaml(yaml_file):
         with open(yaml_file, "r") as f:
@@ -58,16 +61,17 @@ class PickAndPlaceActionConfig:
             pre_place_pose_ts=np.array(data["pre_place_pose_ts"]),
             place_pose_ts=np.array(data["place_pose_ts"]),
             post_place_pose_ts=np.array(data["post_place_pose_ts"]),
-            move_to_pre_pick_duration_s = data["move_to_pre_pick_duration_s"],
-            move_to_pick_duration_s = data["move_to_pick_duration_s"],
-            pick_duration_s = data["pick_duration_s"],
-            move_to_post_pick_duration_s = data["move_to_post_pick_duration_s"],
-            move_to_pre_place_duration_s = data["move_to_pre_place_duration_s"],
-            move_to_place_duration_s = data["move_to_place_duration_s"],
-            place_duration_s = data["place_duration_s"],
-            move_to_post_place_duration_s = data["move_to_post_place_duration_s"],
-            move_to_home_duration_s = data["move_to_home_duration_s"],
+            move_to_pre_pick_duration_s=data["move_to_pre_pick_duration_s"],
+            move_to_pick_duration_s=data["move_to_pick_duration_s"],
+            pick_duration_s=data["pick_duration_s"],
+            move_to_post_pick_duration_s=data["move_to_post_pick_duration_s"],
+            move_to_pre_place_duration_s=data["move_to_pre_place_duration_s"],
+            move_to_place_duration_s=data["move_to_place_duration_s"],
+            place_duration_s=data["place_duration_s"],
+            move_to_post_place_duration_s=data["move_to_post_place_duration_s"],
+            move_to_home_duration_s=data["move_to_home_duration_s"],
         )
+
 
 class PickAndPlaceActionPlanner:
     def __init__(self, cfg, model_manager):
@@ -117,7 +121,7 @@ class PickAndPlaceActionPlanner:
         self.pre_pick_pose_js = self.model_manager.ik(
             target_pos=self.cfg.pre_pick_pose_ts,
             target_rot=self._rot_from_js_pose(self.cfg.home_pose_js),
-            qinit=self.cfg.home_pose_js
+            qinit=self.cfg.home_pose_js,
         )
         # Keep gripper open
         self.pre_pick_pose_js = np.append(self.pre_pick_pose_js, 0)
@@ -125,7 +129,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.cfg.home_pose_js,
             end_joint_positions=self.pre_pick_pose_js,
-            traj_duration_s=self.cfg.move_to_pre_pick_duration_s
+            traj_duration_s=self.cfg.move_to_pre_pick_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_PICK
@@ -137,7 +141,7 @@ class PickAndPlaceActionPlanner:
         self.pick_pose_js = self.model_manager.ik(
             target_pos=self.cfg.pick_pose_ts,
             target_rot=self._rot_from_js_pose(self.pre_pick_pose_js),
-            qinit=self.pre_pick_pose_js
+            qinit=self.pre_pick_pose_js,
         )
         # Keep gripper open
         self.pick_pose_js = np.append(self.pick_pose_js, 0)
@@ -145,7 +149,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.pre_pick_pose_js,
             end_joint_positions=self.pick_pose_js,
-            traj_duration_s=self.cfg.move_to_pick_duration_s
+            traj_duration_s=self.cfg.move_to_pick_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.PICK_ITEM
@@ -154,12 +158,12 @@ class PickAndPlaceActionPlanner:
         self._print_current_action()
 
         self.picking_pose_js = self.pick_pose_js
-        self.picking_pose_js[-1] = 255 # Close all the way
+        self.picking_pose_js[-1] = 255  # Close all the way
 
         self._generate_command(
             start_joint_positions=self.pick_pose_js,
             end_joint_positions=self.picking_pose_js,
-            traj_duration_s=self.cfg.pick_duration_s
+            traj_duration_s=self.cfg.pick_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_POST_PICK
@@ -179,7 +183,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.picking_pose_js,
             end_joint_positions=self.post_pick_pose_js,
-            traj_duration_s=self.cfg.move_to_post_pick_duration_s
+            traj_duration_s=self.cfg.move_to_post_pick_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_PRE_PLACE
@@ -191,7 +195,7 @@ class PickAndPlaceActionPlanner:
         self.pre_place_pose_js = self.model_manager.ik(
             target_pos=self.cfg.pre_place_pose_ts,
             target_rot=self._rot_from_js_pose(self.post_pick_pose_js),
-            qinit=self.post_pick_pose_js
+            qinit=self.post_pick_pose_js,
         )
         # Keep gripper closed
         self.pre_place_pose_js = np.append(self.pre_place_pose_js, 255)
@@ -199,7 +203,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.post_pick_pose_js,
             end_joint_positions=self.pre_place_pose_js,
-            traj_duration_s=self.cfg.move_to_pre_place_duration_s
+            traj_duration_s=self.cfg.move_to_pre_place_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_PLACE
@@ -211,7 +215,7 @@ class PickAndPlaceActionPlanner:
         self.place_pose_js = self.model_manager.ik(
             target_pos=self.cfg.place_pose_ts,
             target_rot=self._rot_from_js_pose(self.pre_place_pose_js),
-            qinit=self.pre_place_pose_js
+            qinit=self.pre_place_pose_js,
         )
         # Keep gripper closed
         self.place_pose_js = np.append(self.place_pose_js, 255)
@@ -219,21 +223,21 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.pre_place_pose_js,
             end_joint_positions=self.place_pose_js,
-            traj_duration_s=self.cfg.move_to_place_duration_s
+            traj_duration_s=self.cfg.move_to_place_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.PLACE_ITEM
-        
+
     def _place_item(self):
         self._print_current_action()
 
         # Compute place pose
         self.placing_pose_js = self.place_pose_js
-        self.placing_pose_js[-1] = 0 # Open it now fully
+        self.placing_pose_js[-1] = 0  # Open it now fully
         self._generate_command(
             start_joint_positions=self.place_pose_js,
             end_joint_positions=self.placing_pose_js,
-            traj_duration_s=self.cfg.place_duration_s
+            traj_duration_s=self.cfg.place_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_POST_PLACE
@@ -245,7 +249,7 @@ class PickAndPlaceActionPlanner:
         self.post_place_pose_js = self.model_manager.ik(
             target_pos=self.cfg.post_place_pose_ts,
             target_rot=self._rot_from_js_pose(self.placing_pose_js),
-            qinit=self.placing_pose_js
+            qinit=self.placing_pose_js,
         )
         # Keep the gripper open
         self.post_place_pose_js = np.append(self.post_place_pose_js, 0)
@@ -253,7 +257,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.placing_pose_js,
             end_joint_positions=self.post_place_pose_js,
-            traj_duration_s=self.cfg.move_to_post_place_duration_s
+            traj_duration_s=self.cfg.move_to_post_place_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.MOVE_TO_HOME
@@ -264,7 +268,7 @@ class PickAndPlaceActionPlanner:
         self._generate_command(
             start_joint_positions=self.post_place_pose_js,
             end_joint_positions=self.cfg.home_pose_js,
-            traj_duration_s=self.cfg.move_to_home_duration_s
+            traj_duration_s=self.cfg.move_to_home_duration_s,
         )
 
         self.next_action = PickAndPlaceActionType.NONE
@@ -274,7 +278,9 @@ class PickAndPlaceActionPlanner:
         self.controller_command = None
         self._done = True
 
-    def _generate_command(self, start_joint_positions, end_joint_positions, traj_duration_s):
+    def _generate_command(
+        self, start_joint_positions, end_joint_positions, traj_duration_s
+    ):
         num_dofs = len(start_joint_positions)
         zeros = np.zeros(num_dofs)
         trajectory = CubicTrajectory(
@@ -282,11 +288,9 @@ class PickAndPlaceActionPlanner:
             end_pos=end_joint_positions,
             start_vel=zeros,
             end_vel=zeros,
-            duration=traj_duration_s
+            duration=traj_duration_s,
         )
-        self.controller_command = ControllerCommand(
-            trajectory=trajectory
-        )
+        self.controller_command = ControllerCommand(trajectory=trajectory)
 
     def done(self):
         return self._done

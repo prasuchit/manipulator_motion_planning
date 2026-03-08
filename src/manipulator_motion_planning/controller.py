@@ -1,5 +1,5 @@
-from motion_types import ControllerCommand, DriverCommand
-import numpy as np
+from manipulator_motion_planning.motion_types import ControllerCommand, DriverCommand
+
 
 class Controller:
     def __init__(self):

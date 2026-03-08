@@ -1,5 +1,6 @@
 import zmq
 
+
 class ZmqSubscriber:
     def __init__(self, socket, topic):
         self.socket = socket
@@ -12,4 +13,3 @@ class ZmqSubscriber:
         except zmq.Again:
             # No new data received, don't latch
             return None
-    
