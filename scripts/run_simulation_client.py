@@ -5,28 +5,28 @@ import mujoco
 import mujoco.viewer
 
 from manipulator_motion_planning import PROJECT_ROOT
-from manipulator_motion_planning.mujoco_model_manager import MujocoModelManager
+from manipulator_motion_planning.model_manager.mujoco_model_manager import (
+    MujocoModelManager,
+)
+from manipulator_motion_planning.motion_types import DriverConfig
 from manipulator_motion_planning.zmq_common.publisher import ZmqPublisher
 from manipulator_motion_planning.zmq_common.subscriber import ZmqSubscriber
 from manipulator_motion_planning.zmq_common.utils import get_pub_socket, get_sub_socket
 
 MS_TO_S = 1e-3
-HOST = "localhost"
-PUB_PORT = 5556
-SUB_PORT = 5555
-ROBOT_CMD_TOPIC = "robot_cmd"
-ROBOT_STATUS_TOPIC = "robot_status"
 RECORD = True
 VIDEO_FPS = 30
 VIDEO_WIDTH = 1280
 VIDEO_HEIGHT = 960
 
-
 def main():
-    pub_socket = get_pub_socket(HOST, PUB_PORT)
-    sub_socket = get_sub_socket(HOST, SUB_PORT)
-    robot_cmd_sub = ZmqSubscriber(sub_socket, ROBOT_CMD_TOPIC)
-    robot_status_pub = ZmqPublisher(pub_socket, ROBOT_STATUS_TOPIC)
+    sim_driver_config = DriverConfig.load_from_yaml(
+        f"{PROJECT_ROOT}/configs/simulation_driver_config.yaml", driver_type="client"
+    )
+    pub_socket = get_pub_socket(sim_driver_config.host, sim_driver_config.pub_port)
+    sub_socket = get_sub_socket(sim_driver_config.host, sim_driver_config.sub_port)
+    robot_cmd_sub = ZmqSubscriber(sub_socket, sim_driver_config.robot_cmd_topic)
+    robot_status_pub = ZmqPublisher(pub_socket, sim_driver_config.robot_status_topic)
 
     mm = MujocoModelManager(scene_path=f"{PROJECT_ROOT}/models/main.xml")
     home = [1.5708, -1.5708, 1.5708, -1.5708, -1.5708, 0]

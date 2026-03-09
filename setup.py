@@ -1,8 +1,13 @@
-from setuptools import setup, find_packages
 from pathlib import Path
 
+from setuptools import find_packages, setup
+
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text(encoding="utf-8") if (this_directory / "README.md").exists() else ""
+long_description = (
+    (this_directory / "README.md").read_text(encoding="utf-8")
+    if (this_directory / "README.md").exists()
+    else ""
+)
 
 setup(
     name="manipulator_motion_planning",
@@ -12,13 +17,10 @@ setup(
     long_description_content_type="text/markdown",
     author="Prasanth Sengadu Suresh",
     url="https://github.com/prasuchit/manipulator_motion_planning",
-
     # only look inside src for the main package
     packages=find_packages(where="src"),
-
     # tells setuptools that package root lives in src/
     package_dir={"": "src"},
-
     include_package_data=True,
     python_requires=">=3.10",
     install_requires=[

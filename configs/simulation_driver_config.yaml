@@ -1,0 +1,13 @@
+server:
+  host: "localhost"
+  pub_port: 5555
+  sub_port: 5556
+  robot_cmd_topic: "robot_cmd"
+  robot_status_topic: "robot_status"
+
+client:
+  host: "localhost"
+  pub_port: 5556
+  sub_port: 5555
+  robot_cmd_topic: "robot_cmd"
+  robot_status_topic: "robot_status"

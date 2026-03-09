@@ -1,14 +1,18 @@
-from manipulator_motion_planning.motion_types import ControllerCommand, DriverCommand
+from manipulator_motion_planning.motion_types import (
+    ControllerCommand,
+    DriverCommand,
+    DriverStatus,
+)
 
 
 class Controller:
     def __init__(self):
         self.ctrl_cmd = None
 
-    def set_controller_command(self, ctrl_cmd: ControllerCommand):
+    def set_controller_command(self, ctrl_cmd: ControllerCommand) -> None:
         self.ctrl_cmd = ctrl_cmd
 
-    def get_driver_cmd(self, driver_status, t):
+    def get_driver_cmd(self, driver_status: DriverStatus, t: float) -> DriverCommand:
         if self.ctrl_cmd is None:
             return None
 

@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Dict, List, Protocol
 
 import numpy as np
+import yaml
 from numpy.typing import NDArray
 
 
@@ -13,7 +14,7 @@ class DriverStatus:
     current_joint_accelerations: NDArray
 
     @staticmethod
-    def from_dict(json_data):
+    def from_dict(json_data: Dict[str, Any]) -> "DriverStatus":
         return DriverStatus(
             time_s=json_data["time_s"],
             current_joint_positions=np.array(json_data["current_joint_positions"]),
@@ -23,7 +24,7 @@ class DriverStatus:
             ),
         )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "time_s": self.time_s,
             "current_joint_positions": list(self.current_joint_positions),
@@ -37,11 +38,41 @@ class DriverCommand:
     target_joint_positions: NDArray
 
     @staticmethod
-    def from_dict(json_data):
+    def from_dict(json_data: Dict[str, Any]) -> "DriverCommand":
         return DriverCommand(target_joint_positions=json_data["target_joint_positions"])
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, List]:
         return {"target_joint_positions": list(self.target_joint_positions)}
+
+
+@dataclass
+class DriverConfig:
+    host: str = "localhost"
+    pub_port: int = 5555
+    sub_port: int = 5556
+    robot_cmd_topic: str = "robot_cmd"
+    robot_status_topic: str = "robot_status"
+
+    @staticmethod
+    def load_from_yaml(yaml_file: Dict[str, Any], driver_type: str) -> "DriverConfig":
+        with open(yaml_file, "r") as f:
+            data = yaml.safe_load(f)
+        return DriverConfig(
+            host=data[driver_type]["host"],
+            pub_port=data[driver_type]["pub_port"],
+            sub_port=data[driver_type]["sub_port"],
+            robot_cmd_topic=data[driver_type]["robot_cmd_topic"],
+            robot_status_topic=data[driver_type]["robot_status_topic"],
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "host": self.host,
+            "pub_port": self.pub_port,
+            "sub_port": self.sub_port,
+            "robot_cmd_topic": self.robot_cmd_topic,
+            "robot_status_topic": self.robot_status_topic,
+        }
 
 
 @dataclass

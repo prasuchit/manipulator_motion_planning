@@ -1,10 +1,16 @@
 import numpy as np
 
+from manipulator_motion_planning import PROJECT_ROOT
 from manipulator_motion_planning.controller import Controller
-from manipulator_motion_planning.motion_planning.trajectory_generator import CubicTrajectory
-from manipulator_motion_planning.motion_types import ControllerCommand
-from manipulator_motion_planning.mujoco_model_manager import MujocoModelManager
-from manipulator_motion_planning.pick_and_place import PickAndPlaceActionConfig, PickAndPlaceActionPlanner
+from manipulator_motion_planning.model_manager.mujoco_model_manager import (
+    MujocoModelManager,
+)
+from manipulator_motion_planning.motion_planning.trajectory_generator import (
+    CubicTrajectory,
+)
+from manipulator_motion_planning.motion_types import ControllerCommand, DriverConfig
+from manipulator_motion_planning.pick_and_place import PickAndPlacePlanner
+from manipulator_motion_planning.pick_and_place_configs import PickAndPlaceActionConfig
 from manipulator_motion_planning.simulation_driver import SimulationDriver
 
 
@@ -24,15 +30,18 @@ def generate_controller_command(
 
 def main():
     # Create a sim_driver so we can interact with the simulator
-    sim_driver = SimulationDriver()
+    sim_driver_config = DriverConfig.load_from_yaml(
+        f"{PROJECT_ROOT}/configs/simulation_driver_config.yaml", driver_type="server"
+    )
+    sim_driver = SimulationDriver(sim_driver_config)
     sim_driver.wait_for_initialization()
 
     # Create our action
     pick_n_place_cfg = PickAndPlaceActionConfig.load_from_yaml(
-        "configs/pick_and_place_config.yaml"
+        f"{PROJECT_ROOT}/configs/pick_and_place_config.yaml"
     )
     mm = MujocoModelManager("models/main.xml")
-    pick_n_place_planner = PickAndPlaceActionPlanner(pick_n_place_cfg, mm)
+    pick_n_place_planner = PickAndPlacePlanner(pick_n_place_cfg, mm)
 
     # Create a controller
     controller = Controller()

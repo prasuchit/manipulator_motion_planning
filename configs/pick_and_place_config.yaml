@@ -1,22 +1,24 @@
-home_pose_js: [1.5708, -1.5708, 1.5708, -1.5708, -1.5708, 0, 0]
+joint_states:
+  home_pose_js: [1.5708, -1.5708, 1.5708, -1.5708, -1.5708, 0, 0]
 
-# Pick
-pre_pick_pose_ts: [-0.5, -0.5, 0.3]
-pick_pose_ts: [-0.5, -0.5, 0.2]
-post_pick_pose_ts: [-0.5, -0.5, 0.3]
+task_states:
+  # Pick
+  pre_pick_pose_ts: [-0.5, -0.5, 0.3]
+  pick_pose_ts: [-0.5, -0.5, 0.2]
+  post_pick_pose_ts: [-0.5, -0.5, 0.3]
 
-# Place
-pre_place_pose_ts: [0.5, 0.5, 0.3]
-place_pose_ts: [0.5, 0.5, 0.2]
-post_place_pose_ts: [0.5, 0.5, 0.3]
+  # Place
+  pre_place_pose_ts: [0.5, 0.5, 0.3]
+  place_pose_ts: [0.5, 0.5, 0.2]
+  post_place_pose_ts: [0.5, 0.5, 0.3]
 
-
-move_to_pre_pick_duration_s: 2
-move_to_pre_place_duration_s: 2
-move_to_home_duration_s: 0.5
-move_to_pick_duration_s: 0.5
-pick_duration_s: 0.5
-move_to_post_pick_duration_s: 1
-move_to_place_duration_s: 1
-place_duration_s: 0.5
-move_to_post_place_duration_s: 1
+action_durations:
+  move_to_pre_pick_duration_s: 2
+  move_to_pre_place_duration_s: 2
+  move_to_home_duration_s: 0.5
+  move_to_pick_duration_s: 0.5
+  pick_duration_s: 0.5
+  move_to_post_pick_duration_s: 1
+  move_to_place_duration_s: 1
+  place_duration_s: 0.5
+  move_to_post_place_duration_s: 1
